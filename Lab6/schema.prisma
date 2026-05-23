@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model access {
+  access_id Int        @id @default(autoincrement())
+  name      String     @unique @db.VarChar(50)
+  cupboard  cupboard[]
+  shelf     shelf[]
+}
+
+model cell {
+  cell_id                       Int      @id
+  object_id                     Int?
+  name                          String
+  size                          Int?
+  color                         String?
+  shelf_id                      Int?
+  object_cell_object_idToobject object?  @relation("cell_object_idToobject", fields: [object_id], references: [object_id], onDelete: NoAction, onUpdate: NoAction)
+  shelf                         shelf?   @relation(fields: [shelf_id], references: [shelf_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cell_shelf")
+  object_object_cell_idTocell   object[] @relation("object_cell_idTocell")
+}
+
+model cupboard {
+  cupboard_id Int     @id
+  name        String
+  description String?
+  location    String? @default("Unknown")
+  access_id   Int?
+  access      access? @relation(fields: [access_id], references: [access_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cupboard_access")
+  shelf       shelf[]
+}
+
+model manufacturer {
+  manufacturer_id Int      @id @default(autoincrement())
+  name            String   @unique
+  source          source[]
+}
+
+model object {
+  object_id                   Int     @id @default(autoincrement())
+  source_id                   Int?
+  name                        String
+  description                 String?
+  count                       Int?    @default(1)
+  weight                      Int?
+  size                        Int?
+  cell_id                     Int?
+  note                        String?
+  cell_cell_object_idToobject cell[]  @relation("cell_object_idToobject")
+  cell_object_cell_idTocell   cell?   @relation("object_cell_idTocell", fields: [cell_id], references: [cell_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_object_cell")
+  source                      source? @relation(fields: [source_id], references: [source_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model shelf {
+  shelf_id    Int       @id
+  name        String
+  size        Int?
+  cupboard_id Int?
+  access_id   Int?
+  cell        cell[]
+  access      access?   @relation(fields: [access_id], references: [access_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_shelf_access")
+  cupboard    cupboard? @relation(fields: [cupboard_id], references: [cupboard_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_shelf_cupboard")
+}
+
+model source {
+  source_id       Int           @id
+  name            String
+  description     String?
+  link            String?
+  picture         String?
+  manufacturer_id Int?
+  object          object[]
+  manufacturer    manufacturer? @relation(fields: [manufacturer_id], references: [manufacturer_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_source_manufacturer")
+}

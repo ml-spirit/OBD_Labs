@@ -1,0 +1,2 @@
+ALTER TABLE object
+ADD COLUMN note TEXT;
